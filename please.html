@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pretty Please?</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+        .hearts-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .heart-bg {
+            position: absolute;
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.3);
+            animation: floatHeart 6s linear infinite;
+        }
+
+        @keyframes floatHeart {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0.3; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: clamp(1rem, 4vw, 2rem);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 900px;
+            width: min(90%, 900px);
+            position: relative;
+            z-index: 1;
+            margin: 1rem;
+            backdrop-filter: blur(5px);
+        }
+        h1 {
+            color: #ff1493;
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: clamp(0.5rem, 2vw, 1rem);
+            animation: bounce 1s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        .photo-grid {
+            position: relative;
+            height: min(600px, 70vh);
+            margin: clamp(1rem, 3vw, 2rem) auto;
+            perspective: 1000px;
+            width: 100%;
+            transform-style: preserve-3d;
+        }
+
+        .photo-item {
+            position: absolute;
+            width: min(250px, 70vw);
+            height: min(250px, 70vw);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            background: white;
+            padding: 10px;
+            user-select: none;
+            touch-action: none;
+            transform: translateZ(0) rotateX(0) rotateY(0);
+        }
+
+        .photo-item:hover {
+            transform: translateZ(50px) rotateX(10deg) rotateY(10deg);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            z-index: 10;
+        }
+
+        .photo-item.dragging {
+            opacity: 0.9;
+            z-index: 1000;
+            transform: translateZ(100px) scale(1.1);
+        }
+
+        .photo-item img {
+            width: calc(100% - 20px);
+            height: calc(100% - 40px);
+            object-fit: cover;
+            border-radius: 5px;
+            margin: 10px;
+            pointer-events: none;
+        }
+
+        .photo-caption {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            font-style: italic;
+            pointer-events: none;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 100;
+        }
+        .btn {
+            padding: clamp(0.8rem, 3vw, 1.2rem) clamp(2rem, 5vw, 4rem);
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-yes {
+            background: linear-gradient(45deg, #ff1493, #ff69b4);
+            color: white;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+        }
+        .btn-no {
+            background: #999;
+            color: white;
+            position: absolute;
+            transition: all 0.2s ease;
+        }
+        .btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 20, 147, 0.4);
+        }
+        p {
+            color: #333;
+            font-size: 1.3rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="hearts-bg" id="heartsBg"></div>
+    <div class="container">
+        <h1>Pretty Please? 🥺</h1>
+        <p>Look at all these magical moments we've shared... 💕</p>
+        <div class="photo-grid" id="photoGrid">
+            <!-- Photos will be loaded dynamically -->
+            <br><br><br><br><br><br>
+            <p>How can you say no to this face? 💕</p>
+            <div class="buttons">
+                <button class="btn btn-yes" onclick="acceptProposal()">Yes</button>
+                <button class="btn btn-no" id="noBtn">No</button>
+            </div>   
+        </div>
+         
+    </div>
+
+    <script>
+        // Create floating hearts background
+        function createHeartsBg() {
+            const heartsContainer = document.getElementById('heartsBg');
+            const heartCount = 20;
+
+            for (let i = 0; i < heartCount; i++) {
+                setTimeout(() => {
+                    const heart = document.createElement('div');
+                    heart.className = 'heart-bg';
+                    heart.innerHTML = '❤';
+                    heart.style.left = Math.random() * 100 + 'vw';
+                    heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                    heart.style.opacity = Math.random() * 0.3 + 0.1;
+                    heartsContainer.appendChild(heart);
+
+                    heart.addEventListener('animationend', () => heart.remove());
+                }, i * 300);
+            }
+
+            setInterval(() => createHeartsBg(), 6000);
+        }
+
+        // Load and display photos from the same directory
+        async function loadPhotos() {
+            const photoGrid = document.getElementById('photoGrid');
+            const photos = [
+                { src: 'images/pic2.jpg', caption: 'You and Me' },
+                { src: 'images/pic3.jpg', caption: 'You and Me' },
+                { src: 'images/pic4.jpg', caption: 'You and Me' },
+                { src: 'images/pic5.jpg', caption: 'You and Me' },
+                { src: 'images/pic6.jpg', caption: 'You and Me' },
+                { src: 'images/pic7.jpg', caption: 'You and Me' }
+            ];
+            
+            photos.forEach((photo, index) => {
+                const photoItem = document.createElement('div');
+                photoItem.className = 'photo-item';
+                const rotation = Math.random() * 30 - 15;
+                const left = Math.random() * 60;
+                const top = Math.random() * 60;
+                photoItem.style.transform = `translateZ(0) rotateX(0) rotateY(0) rotate(${rotation}deg)`;
+                photoItem.style.left = `${left}%`;
+                photoItem.style.top = `${top}%`;
+                photoItem.style.zIndex = Math.floor(Math.random() * 10);
+
+                const link = document.createElement('a');
+                link.href = photo.src;
+                
+                const img = document.createElement('img');
+                img.src = photo.src;
+                img.alt = photo.caption;
+                img.onerror = () => {
+                    img.src = 'images/couple1.jpg';
+                };
+
+                const caption = document.createElement('div');
+                caption.className = 'photo-caption';
+                caption.textContent = photo.caption;
+
+                link.appendChild(img);
+                photoItem.appendChild(link);
+                photoItem.appendChild(caption);
+                makeDraggable(photoItem);
+                photoGrid.appendChild(photoItem);
+            });
+        }
+
+        function makeDraggable(element) {
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+            let xOffset = 0;
+            let yOffset = 0;
+
+            element.addEventListener('mousedown', dragStart);
+            element.addEventListener('mousemove', drag);
+            element.addEventListener('mouseup', dragEnd);
+            element.addEventListener('mouseleave', dragEnd);
+
+            element.addEventListener('touchstart', dragStart);
+            element.addEventListener('touchmove', drag);
+            element.addEventListener('touchend', dragEnd);
+
+            function dragStart(e) {
+                if (e.type === 'touchstart') {
+                    initialX = e.touches[0].clientX - xOffset;
+                    initialY = e.touches[0].clientY - yOffset;
+                } else {
+                    initialX = e.clientX - xOffset;
+                    initialY = e.clientY - yOffset;
+                }
+                if (e.target === element) {
+                    isDragging = true;
+                    element.classList.add('dragging');
+                }
+            }
+
+            function drag(e) {
+                if (isDragging) {
+                    e.preventDefault();
+                    if (e.type === 'touchmove') {
+                        currentX = e.touches[0].clientX - initialX;
+                        currentY = e.touches[0].clientY - initialY;
+                    } else {
+                        currentX = e.clientX - initialX;
+                        currentY = e.clientY - initialY;
+                    }
+                    xOffset = currentX;
+                    yOffset = currentY;
+                    setTranslate(currentX, currentY, element);
+                }
+            }
+
+            function dragEnd() {
+                initialX = currentX;
+                initialY = currentY;
+                isDragging = false;
+                element.classList.remove('dragging');
+            }
+
+            function setTranslate(xPos, yPos, el) {
+                const rotation = el.style.transform.match(/rotate\(([^)]+)\)/)[1];
+                el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0) rotate(${rotation})`;
+            }
+        }
+
+        // Handle file inputs for photo upload
+        const fileInputs = [];
+        for(let i = 0; i < 6; i++) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.style.display = 'none';
+            input.addEventListener('change', (e) => handleFileSelect(e, i));
+            document.body.appendChild(input);
+            fileInputs.push(input);
+        }
+
+        function triggerFileInput(index) {
+            if (!event.target.classList.contains('dragging')) {
+                fileInputs[index].click();
+            }
+        }
+
+        function handleFileSelect(event, index) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const photoItem = document.querySelectorAll('.photo-item')[index];
+                    const img = photoItem.querySelector('img');
+                    img.src = e.target.result;
+                    const caption = photoItem.querySelector('.photo-caption');
+                    if (caption) caption.remove();
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Initialize
+        createHeartsBg();
+        loadPhotos();
+
+        // Handle the No button
+        let mouseX = 0, mouseY = 0;
+        const noBtn = document.getElementById('noBtn');
+        const container = document.querySelector('.container');
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            moveButtonIfClose();
+        });
+
+        function moveButtonIfClose() {
+            const btnRect = noBtn.getBoundingClientRect();
+            const btnCenterX = btnRect.left + btnRect.width / 2;
+            const btnCenterY = btnRect.top + btnRect.height / 2;
+            const distance = Math.hypot(mouseX - btnCenterX, mouseY - btnCenterY);
+
+            if (distance < 100) {
+                moveButton();
+            }
+        }
+
+        function moveButton() {
+            const containerRect = container.getBoundingClientRect();
+            const btnRect = noBtn.getBoundingClientRect();
+            
+            // Add padding to keep button away from edges
+            const padding = 20;
+            const maxX = containerRect.width - btnRect.width - padding * 2;
+            const maxY = containerRect.height - btnRect.height - padding * 2;
+            
+            // Ensure button stays within container bounds
+            let newX = Math.min(Math.max(padding, Math.random() * maxX + padding), maxX);
+            let newY = Math.min(Math.max(padding, Math.random() * maxY + padding), maxY);
+            
+            noBtn.style.left = `${newX}px`;
+            noBtn.style.top = `${newY}px`;
+        }
+
+        function acceptProposal() {
+            document.querySelector('.container').innerHTML = `
+                <h1>🎉 Yay! Thank You! 🎉</h1>
+                <p>You've made me the happiest person! ❤️</p>
+            `;
+            createHearts();
+        }
+
+        function createHearts() {
+            const heartsContainer = document.getElementById('heartsBg');
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.className = 'heart-bg';
+                heart.innerHTML = '❤';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.animationDuration = Math.random() * 2 + 3 + 's';
+                heartsContainer.appendChild(heart);
+                setTimeout(() => heart.remove(), 5000);
+            }, 300);
+        }
+    </script>
+</body>
+</html>

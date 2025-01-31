@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will You Be My Valentine?</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: clamp(1rem, 4vw, 2rem);
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: min(90%, 800px);
+            position: relative;
+            margin: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 80vh;
+        }
+        .photo-container {
+            width: min(300px, 80vw);
+            margin: clamp(10px, 3vw, 20px) auto;
+            perspective: 1000px;
+        }
+        .photo-item {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateZ(0) rotateX(0) rotateY(0);
+        }
+        .photo-item:hover {
+            transform: translateZ(30px) rotateX(5deg) rotateY(5deg);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+        .photo-item a {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        h1 {
+            color: #ff1493;
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            margin-bottom: clamp(0.5rem, 2vw, 1rem);
+        }
+        p {
+            color: #333;
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            margin-bottom: clamp(1rem, 3vw, 2rem);
+            padding: 0 clamp(0.5rem, 2vw, 1rem);
+        }
+        .buttons {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: clamp(1rem, 3vw, 2rem);
+            margin-top: clamp(1rem, 3vw, 2rem);
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: clamp(0.8rem, 2vw, 1rem) clamp(2rem, 4vw, 3rem);
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-yes {
+            background: #ff1493;
+            color: white;
+            position: relative;
+            z-index: 2;
+        }
+        .btn-no {
+            background: #999;
+            color: white;
+            transition: transform 0.3s;
+        }
+        .hearts {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .heart {
+            position: absolute;
+            font-size: 20px;
+            color: #fff;
+            animation: float 4s ease-in infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(100vh); opacity: 1; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hearts" id="hearts"></div>
+    <div class="container">
+        <h1>Will You Be My Valentine?</h1>
+        <div class="photo-container">
+            <div class="photo-item">
+                <img src="images/couple1.jpg" alt="Our Special Memory" class="memory-photo">
+            </div>
+        </div>
+        <p>Every moment with you is a gift, and I want to make this Valentine's Day special.<br>Would you be mine?</p>
+        <div class="buttons">
+            <button class="btn btn-yes" onclick="acceptProposal()">Yes</button>
+            <button class="btn btn-no" onclick="window.location.href='please.html'">No</button>
+        </div>
+    </div>
+
+    <script>
+        // No button behavior removed to make it static
+
+        function acceptProposal() {
+            document.querySelector('.container').innerHTML = `
+                <h1>🎉 Yay! I Love You! 🎉</h1>
+                <p>Thank you for making me the happiest person! ❤️</p>
+            `;
+            createHearts();
+            document.querySelector('.container').style.minHeight = '40vh';
+        }
+
+        function createHearts() {
+            const heartsContainer = document.getElementById('hearts');
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.innerHTML = '❤';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.animationDuration = Math.random() * 2 + 3 + 's';
+                heartsContainer.appendChild(heart);
+                setTimeout(() => heart.remove(), 5000);
+            }, 300);
+        }
+
+        // Display photo with link
+        document.querySelectorAll('.memory-photo').forEach((img) => {
+            const link = document.createElement('a');
+            link.href = 'images/pic1.jpg';
+            img.parentNode.insertBefore(link, img);
+            link.appendChild(img);
+        });
+    </script>
+</body>
+</html>
